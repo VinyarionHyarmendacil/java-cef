@@ -47,6 +47,14 @@ public class MessageRouterHandlerEx extends CefMessageRouterHandlerAdapter {
                 router_ = null;
                 callback.success("");
             }
+        } else if (request.startsWith("doPersistent")) {
+            if (persistent) {
+                callback.success("Hello,");
+                callback.success("World!");
+                callback.failure(0, "Finished");
+            } else {
+                callback.failure(-1, "Request not marked as persistent");
+            }
         } else {
             // not handled
             return false;

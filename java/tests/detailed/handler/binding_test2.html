@@ -17,6 +17,20 @@ function toggleButton() {
   });
 }
 
+function doPersistent() {
+  document.getElementById('persist').value = '';
+  window.cefQuery({
+    request: 'doPersistent',
+    persistent: true,
+    onSuccess: function(response) {
+      document.getElementById('persist').value += ' ' + response;
+    },
+    onFailure: function(error_code, error_message) {
+      document.getElementById('persist').value += ' ' + error_code + ' ' + error_message;
+    }
+  });
+}
+
 function execute(cmd) {
   window.cefQuery({
     request: cmd,
@@ -75,6 +89,11 @@ Second message router:
 <input type="button" id="jcefOff" value="Disable myQuery" onclick="execute('disableExt');" />
 <br/><input type="button" onclick="getJavaVersion();" value="Test"/>
 <input type="text" id="result" size="80" readonly />
+<br/><p>This button tests persistent queries. When the button is pressed, it clears the output,
+and when it receives a success message, it appends it to the output. When it finally receives
+a failure message, it appends the error_code followed by the error_message.</p>
+<input type="button" onclick="doPersistent();" value="Persist"/>
+<input type="text" id="persist" size="80" readonly />
 </form>
 </body>
 </html>

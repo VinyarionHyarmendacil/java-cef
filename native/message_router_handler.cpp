@@ -13,11 +13,16 @@ using CefQueryCallback = CefMessageRouterBrowserSide::Callback;
 // JNI CefQueryCallback object.
 class ScopedJNIQueryCallback : public ScopedJNIObject<CefQueryCallback> {
  public:
-  ScopedJNIQueryCallback(JNIEnv* env, CefRefPtr<CefQueryCallback> obj)
-      : ScopedJNIObject<CefQueryCallback>(env,
-                                          obj,
-                                          "org/cef/callback/CefQueryCallback_N",
-                                          "CefQueryCallback") {}
+  ScopedJNIQueryCallback(JNIEnv* env,
+                         CefRefPtr<CefQueryCallback> obj,
+                         bool persistent)
+      : ScopedJNIObject<CefQueryCallback>(
+            env,
+            obj,
+            persistent ?
+              "org/cef/callback/CefQueryCallback_N_Persistent" :
+              "org/cef/callback/CefQueryCallback_N",
+            "CefQueryCallback") {}
 };
 
 }  // namespace
@@ -40,7 +45,11 @@ bool MessageRouterHandler::OnQuery(
   ScopedJNIFrame jframe(env, frame);
   jframe.SetTemporary();
   ScopedJNIString jrequest(env, request);
-  ScopedJNIQueryCallback jcallback(env, callback);
+
+  // Uses a subclass of CefQueryCallback_N for persistent queries, as otherwise
+  // the reference to the CefMessageRouterBrowserSide::Callback gets cleared
+  // immediately when N_Success is called
+  ScopedJNIQueryCallback jcallback(env, callback, persistent);
 
   jboolean jresult = JNI_FALSE;
 

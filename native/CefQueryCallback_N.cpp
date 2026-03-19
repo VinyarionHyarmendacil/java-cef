@@ -26,11 +26,14 @@ JNIEXPORT void JNICALL
 Java_org_cef_callback_CefQueryCallback_1N_N_1Success(JNIEnv* env,
                                                      jobject obj,
                                                      jlong self,
-                                                     jstring response) {
+                                                     jstring response,
+                                                     jboolean persistent) {
   CefRefPtr<CefQueryCallback> callback = GetSelf(self);
   if (!callback)
     return;
   callback->Success(GetJNIString(env, response));
+  if (persistent)
+      return;
   ClearSelf(env, obj);
 }
 

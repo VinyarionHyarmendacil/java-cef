@@ -22,4 +22,12 @@ public interface CefQueryCallback {
      * @param error_message Error message passed to JavaScript.
      */
     public void failure(int error_code, String error_message);
+
+    /**
+     * Returns whether this callback is persistent and therefore whether
+     * {@link CefQueryCallback#success(String)} may be called multiple times.
+     * Persistent queries must be explicitly canceled, either from the browser
+     * or via {@link CefQueryCallback#failure(int, String)}.
+     */
+    public boolean isPersistent();
 }
