@@ -38,6 +38,23 @@ Java_org_cef_callback_CefQueryCallback_1N_N_1Success(JNIEnv* env,
 }
 
 JNIEXPORT void JNICALL
+Java_org_cef_callback_CefQueryCallback_1N_N_1SuccessBinary(
+    JNIEnv* env,
+    jobject obj,
+    jlong self,
+    jobject response,
+    jboolean persistent) {
+  CefRefPtr<CefQueryCallback> callback = GetSelf(self);
+  if (!callback)
+    return;
+  callback->Success(GetJNIByteBufferData(env, response),
+                    GetJNIByteBufferLength(env, response));
+  if (persistent)
+      return;
+  ClearSelf(env, obj);
+}
+
+JNIEXPORT void JNICALL
 Java_org_cef_callback_CefQueryCallback_1N_N_1Failure(JNIEnv* env,
                                                      jobject obj,
                                                      jlong self,

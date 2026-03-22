@@ -4,6 +4,8 @@
 
 package org.cef.callback;
 
+import java.nio.ByteBuffer;
+
 /**
  * Interface representing a query callback.
  */
@@ -11,9 +13,16 @@ public interface CefQueryCallback {
     /**
      * Notify the associated JavaScript onSuccess callback that the query has
      * completed successfully.
-     * @param response Response passed to JavaScript.
+     * @param response Response text passed to JavaScript.
      */
     public void success(String response);
+
+    /**
+     * Notify the associated JavaScript onSuccess callback that the query has
+     * completed successfully.
+     * @param response Response direct buffer passed to JavaScript. May be null.
+     */
+    public void success(ByteBuffer response);
 
     /**
      * Notify the associated JavaScript onFailure callback that the query has

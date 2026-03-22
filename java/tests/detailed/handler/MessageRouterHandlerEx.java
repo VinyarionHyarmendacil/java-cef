@@ -12,6 +12,8 @@ import org.cef.browser.CefMessageRouter.CefMessageRouterConfig;
 import org.cef.callback.CefQueryCallback;
 import org.cef.handler.CefMessageRouterHandlerAdapter;
 
+import java.nio.ByteBuffer;
+
 public class MessageRouterHandlerEx extends CefMessageRouterHandlerAdapter {
     private final CefClient client_;
     private final CefMessageRouterConfig config_ =
@@ -54,6 +56,28 @@ public class MessageRouterHandlerEx extends CefMessageRouterHandlerAdapter {
                 callback.failure(0, "Finished");
             } else {
                 callback.failure(-1, "Request not marked as persistent");
+            }
+        } else {
+            // not handled
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onQuery(CefBrowser browser, CefFrame frame, long query_id, ByteBuffer request,
+            boolean persistent, CefQueryCallback callback) {
+        if (request != null) {
+            int size = request.remaining();
+            ByteBuffer response = ByteBuffer.allocateDirect(size);
+            // reverse bytes
+            for (int i = 0; i < size; i++) {
+                byte b = request.get(i);
+                response.put(size - i - 1, b);
+            }
+            callback.success(response);
+            if (persistent) {
+                callback.failure(0, "Finished");
             }
         } else {
             // not handled

@@ -21,6 +21,18 @@ Java_org_cef_callback_CefQueryCallback_1N_N_1Success(JNIEnv*,
 
 /*
  * Class:     org_cef_callback_CefQueryCallback_N
+ * Method:    N_Success
+ * Signature: (JLjava/nio/ByteBuffer;Z)V
+ */
+JNIEXPORT void JNICALL
+Java_org_cef_callback_CefQueryCallback_1N_N_1SuccessBinary(JNIEnv*,
+                                                           jobject,
+                                                           jlong,
+                                                           jobject,
+                                                           jboolean);
+
+/*
+ * Class:     org_cef_callback_CefQueryCallback_N
  * Method:    N_Failure
  * Signature: (JILjava/lang/String;)V
  */

@@ -70,6 +70,49 @@ bool MessageRouterHandler::OnQuery(
   return jresult != JNI_FALSE;
 }
 
+bool MessageRouterHandler::OnQuery(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    int64_t query_id,
+    CefRefPtr<const CefBinaryBuffer> request,
+    bool persistent,
+    CefRefPtr<CefMessageRouterBrowserSide::Callback> callback) {
+  ScopedJNIEnv env;
+  if (!env)
+    return false;
+
+  ScopedJNIBrowser jbrowser(env, browser);
+  ScopedJNIFrame jframe(env, frame);
+  jframe.SetTemporary();
+  ScopedJNIObjectLocal jrequest(
+      env,
+      env->NewDirectByteBuffer(const_cast<void*>(request->GetData()),
+                               (jlong)request->GetSize()));
+
+  // Uses a subclass of CefQueryCallback_N for persistent queries, as otherwise
+  // the reference to the CefMessageRouterBrowserSide::Callback gets cleared
+  // immediately when N_Success is called
+  ScopedJNIQueryCallback jcallback(env, callback, persistent);
+
+  jboolean jresult = JNI_FALSE;
+
+  JNI_CALL_METHOD(env, handle_, "onQuery",
+                  "(Lorg/cef/browser/CefBrowser;Lorg/cef/browser/"
+                  "CefFrame;JLjava/nio/ByteBuffer;ZLorg/cef/"
+                  "callback/CefQueryCallback;)Z",
+                  Boolean, jresult, jbrowser.get(), jframe.get(),
+                  (jlong)query_id, jrequest.get(),
+                  persistent ? JNI_TRUE : JNI_FALSE, jcallback.get());
+
+  if (jresult == JNI_FALSE) {
+    // If the Java method returns "false" the callback won't be used and
+    // the reference can therefore be removed.
+    jcallback.SetTemporary();
+  }
+
+  return jresult != JNI_FALSE;
+}
+
 void MessageRouterHandler::OnQueryCanceled(CefRefPtr<CefBrowser> browser,
                                            CefRefPtr<CefFrame> frame,
                                            int64_t query_id) {
