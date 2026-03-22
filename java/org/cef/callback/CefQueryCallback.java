@@ -20,7 +20,7 @@ public interface CefQueryCallback {
     /**
      * Notify the associated JavaScript onSuccess callback that the query has
      * completed successfully.
-     * @param response Response direct buffer passed to JavaScript. May be null.
+     * @param response Response buffer passed to JavaScript. May be null.
      */
     public void success(ByteBuffer response);
 

@@ -33,7 +33,7 @@ Java_org_cef_callback_CefQueryCallback_1N_N_1Success(JNIEnv* env,
     return;
   callback->Success(GetJNIString(env, response));
   if (persistent)
-      return;
+    return;
   ClearSelf(env, obj);
 }
 
@@ -47,10 +47,34 @@ Java_org_cef_callback_CefQueryCallback_1N_N_1SuccessBinary(
   CefRefPtr<CefQueryCallback> callback = GetSelf(self);
   if (!callback)
     return;
-  callback->Success(GetJNIByteBufferData(env, response),
-                    GetJNIByteBufferLength(env, response));
+  jboolean isDirect = JNI_TRUE;
+  if (response)
+    JNI_CALL_BOOLEAN_METHOD(isDirect, env, response, "isDirect", "()Z");
+  if (isDirect != JNI_FALSE) {
+    callback->Success(GetJNIByteBufferData(env, response),
+                      GetJNIByteBufferLength(env, response));
+  } else {
+    jobject responseArrayObj = nullptr;
+    jint responseOffset = 0;
+    jint responseLength = 0;
+    JNI_CALL_METHOD(env, response, "array", "()[B", Object, responseArrayObj);
+    JNI_CALL_METHOD(env, response, "arrayOffset", "()I", Int, responseOffset);
+    JNI_CALL_METHOD(env, response, "capacity", "()I", Int, responseLength);
+    jbyteArray responseArray = static_cast<jbyteArray>(responseArrayObj);
+    jsize responseArrayLength = env->GetArrayLength(responseArray);
+    if (responseLength >= 0 && responseLength <= responseArrayLength &&
+        responseOffset >= 0 && responseOffset < responseLength) {
+      // isCopy is ignored
+      jboolean isCopy = JNI_FALSE;
+      jbyte *responseBytes = env->GetByteArrayElements(responseArray, &isCopy);
+      callback->Success(static_cast<void*>(responseBytes + responseOffset),
+                        static_cast<size_t>(responseLength));
+      // JNI_ABORT: no need to copy back the data
+      env->ReleaseByteArrayElements(responseArray, responseBytes, JNI_ABORT);
+    }
+  }
   if (persistent)
-      return;
+    return;
   ClearSelf(env, obj);
 }
 

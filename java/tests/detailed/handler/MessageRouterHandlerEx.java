@@ -19,6 +19,7 @@ public class MessageRouterHandlerEx extends CefMessageRouterHandlerAdapter {
     private final CefMessageRouterConfig config_ =
             new CefMessageRouterConfig("myQuery", "myQueryAbort");
     private CefMessageRouter router_ = null;
+    private boolean binary_direct_ = false;
 
     public MessageRouterHandlerEx(final CefClient client) {
         client_ = client;
@@ -68,8 +69,10 @@ public class MessageRouterHandlerEx extends CefMessageRouterHandlerAdapter {
     public boolean onQuery(CefBrowser browser, CefFrame frame, long query_id, ByteBuffer request,
             boolean persistent, CefQueryCallback callback) {
         if (request != null) {
-            int size = request.remaining();
-            ByteBuffer response = ByteBuffer.allocateDirect(size);
+            int size = request.capacity();
+            boolean direct = (binary_direct_ = !binary_direct_);
+            ByteBuffer response = direct ? ByteBuffer.allocateDirect(size)
+                                         : ByteBuffer.allocate(size);
             // reverse bytes
             for (int i = 0; i < size; i++) {
                 byte b = request.get(i);
@@ -77,7 +80,8 @@ public class MessageRouterHandlerEx extends CefMessageRouterHandlerAdapter {
             }
             callback.success(response);
             if (persistent) {
-                callback.failure(0, "Finished");
+                callback.failure(0, direct ? "Finished (direct)"
+                                           : "Finished (array)");
             }
         } else {
             // not handled
